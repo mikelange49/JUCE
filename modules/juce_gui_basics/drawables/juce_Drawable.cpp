@@ -148,7 +148,8 @@ bool Drawable::replaceColour (Colour original, Colour replacement)
 
     for (auto* c : getChildren())
         if (auto* d = dynamic_cast<Drawable*> (c))
-            changed = d->replaceColour (original, replacement) || changed;
+			if (!d->getComponentID().endsWith("NR"))
+				changed = d->replaceColour (original, replacement) || changed;
 
     return changed;
 }

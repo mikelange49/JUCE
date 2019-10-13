@@ -167,9 +167,13 @@ static bool replaceColourInFill (FillType& fill, Colour original, Colour replace
 
 bool DrawableShape::replaceColour (Colour original, Colour replacement)
 {
-    bool changed1 = replaceColourInFill (mainFill,   original, replacement);
-    bool changed2 = replaceColourInFill (strokeFill, original, replacement);
-    return changed1 || changed2;
+	if (!getComponentID().endsWith("NR")) //if component is not named as "Not Recolorable"
+	{
+		bool changed1 = replaceColourInFill(mainFill, original, replacement);
+		bool changed2 = replaceColourInFill(strokeFill, original, replacement);
+		return changed1 || changed2;
+	}
+	return false;
 }
 
 Path DrawableShape::getOutlineAsPath() const

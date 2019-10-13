@@ -481,7 +481,7 @@ void ColourSelector::resized()
 
     if ((flags & showColourspace) != 0)
     {
-        const int hueWidth = jmin (50, proportionOfWidth (0.15f));
+        const int hueWidth = jmin (50, proportionOfWidth (0.20f));
 
         colourSpace->setBounds (edgeGap, y,
                                 getWidth() - hueWidth - edgeGap - 4,

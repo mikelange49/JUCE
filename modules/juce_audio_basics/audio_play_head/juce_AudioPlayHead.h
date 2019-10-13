@@ -121,6 +121,12 @@ public:
         /** True if the transport is currently looping. */
         bool isLooping;
 
+		//The current bar in the song
+		int bar;
+
+		//The current beat in the bar
+		int beat;
+
         //==============================================================================
         bool operator== (const CurrentPositionInfo& other) const noexcept;
         bool operator!= (const CurrentPositionInfo& other) const noexcept;

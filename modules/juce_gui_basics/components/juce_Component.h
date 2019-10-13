@@ -662,10 +662,15 @@ public:
     */
     const Array<Component*>& getChildren() const noexcept          { return childComponentList; }
 
-    /** Looks for a child component with the specified ID.
-        @see setComponentID, getComponentID
-    */
-    Component* findChildWithID (StringRef componentID) const noexcept;
+	/** Looks for a child component which ID starts with the specified ID.
+		@see setComponentID, getComponentID
+	*/
+	Component* findChildStartingWithID(StringRef componentIDStart) const noexcept;
+
+	/** Looks for a child component with the specified ID.
+		@see setComponentID, getComponentID
+	*/
+	Component* findChildWithID(StringRef componentID) const noexcept;
 
     /** Adds a child component to this one.
 

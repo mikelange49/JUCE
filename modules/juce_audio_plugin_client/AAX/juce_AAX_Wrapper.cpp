@@ -1039,9 +1039,25 @@ namespace AAXClasses
                 info.editOriginTime = offset / framesPerSec;
             }
 
-            // No way to get these: (?)
+            // No way to get this : (?)
             info.isRecording = false;
-            info.ppqPositionOfLastBarStart = 0;
+
+			//try calculating ppqPositionOfLastBarStart //TODO only when necessary
+			if (info.isPlaying)
+			{
+				int32_t bar = 0;
+				int32_t beat = 0;
+				int64_t displayTick = 0;
+				check(transport.GetBarBeatPosition(&bar, &beat, &displayTick, info.timeInSamples));
+				info.ppqPositionOfLastBarStart = floor(info.ppqPosition - (beat - 1) * 4.0 / info.timeSigDenominator);
+				info.bar = bar;
+				info.beat = beat;
+			}
+			else
+			{
+				info.ppqPositionOfLastBarStart = 0;
+			}
+
 
             return true;
         }

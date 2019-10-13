@@ -1560,6 +1560,16 @@ Component* Component::findChildWithID (StringRef targetID) const noexcept
     return nullptr;
 }
 
+Component* Component::findChildStartingWithID(StringRef targetID) const noexcept
+{
+	for (auto* c : childComponentList)
+		if (c->componentID.startsWith(targetID))
+			return c;
+
+	return nullptr;
+
+}
+
 Component* Component::getTopLevelComponent() const noexcept
 {
     auto* comp = this;
