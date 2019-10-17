@@ -217,7 +217,8 @@ private:
         Colour colour;
     };
 
-    Array<ColourPoint> colours;
+	//added CriticalSection to fix "Lag" slider drags crashing host
+    Array<ColourPoint, CriticalSection> colours;
 
     JUCE_LEAK_DETECTOR (ColourGradient)
 };
