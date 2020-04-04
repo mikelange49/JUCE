@@ -564,13 +564,35 @@ public:
                 e.data.size     = (uint32) msg.getSysExDataSize();
                 e.data.type     = Steinberg::Vst::DataEvent::kMidiSysEx;
             }
-            else if (msg.isChannelPressure())
-            {
-                e.type                   = Steinberg::Vst::Event::kPolyPressureEvent;
-                e.polyPressure.channel   = createSafeChannel (msg.getChannel());
-                e.polyPressure.pitch     = createSafeNote (msg.getNoteNumber());
-                e.polyPressure.pressure  = normaliseMidiValue (msg.getChannelPressureValue());
-            }
+            //else if (msg.isChannelPressure())
+            //{
+            //    e.type                   = Steinberg::Vst::Event::kPolyPressureEvent;
+            //    e.polyPressure.channel   = createSafeChannel (msg.getChannel());
+            //    e.polyPressure.pitch     = createSafeNote (msg.getNoteNumber());
+            //    e.polyPressure.pressure  = normaliseMidiValue (msg.getChannelPressureValue());
+            //}
+			else if (msg.isPitchWheel())
+			{
+				e.type = Steinberg::Vst::Event::kLegacyMIDICCOutEvent;
+				e.midiCCOut.channel = createSafeChannel(msg.getChannel());
+				e.midiCCOut.controlNumber = Steinberg::Vst::ControllerNumbers::kPitchBend;
+				e.midiCCOut.value  = msg.getPitchWheelValue() % 128;
+				e.midiCCOut.value2 = msg.getPitchWheelValue() / 128;
+			}
+			else if (msg.isAftertouch())
+			{
+				e.type = Steinberg::Vst::Event::kLegacyMIDICCOutEvent;
+				e.midiCCOut.channel = createSafeChannel(msg.getChannel());
+				e.midiCCOut.controlNumber = Steinberg::Vst::ControllerNumbers::kAfterTouch;
+				e.midiCCOut.value = msg.getAfterTouchValue();
+			}
+			else if (msg.isController())
+			{
+				e.type = Steinberg::Vst::Event::kLegacyMIDICCOutEvent;
+				e.midiCCOut.channel = createSafeChannel(msg.getChannel());
+				e.midiCCOut.controlNumber = msg.getControllerNumber();
+				e.midiCCOut.value = msg.getControllerValue();
+			}
             else
             {
                 continue;

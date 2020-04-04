@@ -764,7 +764,7 @@ ValueTree& ValueTree::setPropertyExcludingListener (Listener* listenerToExclude,
                                                     const var& newValue, UndoManager* undoManager)
 {
     jassert (name.toString().isNotEmpty()); // Must have a valid property name!
-    jassert (object != nullptr); // Trying to add a property to a null ValueTree will fail!
+    //TODO-0 put back jassert (object != nullptr); // Trying to add a property to a null ValueTree will fail!
 
     if (object != nullptr)
         object->setProperty (name, newValue, undoManager, listenerToExclude);

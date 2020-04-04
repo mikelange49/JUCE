@@ -81,7 +81,7 @@ public:
         if (decibels <= minusInfinityDb)
         {
             if (customMinusInfinityString.isEmpty())
-                s << "-INF";
+                s << String(CharPointer_UTF8("-\xe2\x88\x9e"));
             else
                 s << customMinusInfinityString;
         }

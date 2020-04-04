@@ -457,7 +457,7 @@ public:
 
         @see setTopLeftPosition, setSize, ComponentListener::componentMovedOrResized
     */
-    void setBounds (int x, int y, int width, int height);
+    void setBounds (int x, int y, int width, int height, bool do_repaint = true);
 
     /** Changes the component's position and size.
 
@@ -473,7 +473,7 @@ public:
 
         @see setBounds
     */
-    void setBounds (Rectangle<int> newBounds);
+    void setBounds (Rectangle<int> newBounds, bool repaint = true);
 
     /** Changes the component's position and size in terms of fractions of its parent's size.
 

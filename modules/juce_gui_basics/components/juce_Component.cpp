@@ -1061,7 +1061,7 @@ Point<float>   Component::localPointToGlobal (Point<float> point) const   { retu
 Rectangle<int> Component::localAreaToGlobal  (Rectangle<int> area) const  { return ComponentHelpers::convertCoordinate (nullptr, this, area); }
 
 //==============================================================================
-void Component::setBounds (int x, int y, int w, int h)
+void Component::setBounds (int x, int y, int w, int h, bool do_repaint)
 {
     // if component methods are being called from threads other than the message
     // thread, you'll need to use a MessageManagerLock object to make sure it's thread-safe.
@@ -1087,12 +1087,15 @@ void Component::setBounds (int x, int y, int w, int h)
             // send a fake mouse move to trigger enter/exit messages if needed..
             sendFakeMouseMove();
 
-            if (! flags.hasHeavyweightPeerFlag)
+            if (! flags.hasHeavyweightPeerFlag && do_repaint)
                 repaintParent();
         }
 
         boundsRelativeToParent.setBounds (x, y, w, h);
 
+		if (!do_repaint)
+			return;
+    	
         if (showing)
         {
             if (wasResized)
@@ -1167,16 +1170,16 @@ void Component::sendMovedResizedMessages (bool wasMoved, bool wasResized)
         componentListeners.callChecked (checker, [=] (ComponentListener& l) { l.componentMovedOrResized (*this, wasMoved, wasResized); });
 }
 
-void Component::setSize (int w, int h)                  { setBounds (getX(), getY(), w, h); }
+void Component::setSize (int w, int h)                        { setBounds (getX(), getY(), w, h); }
+													          
+void Component::setTopLeftPosition (int x, int y)             { setTopLeftPosition ({ x, y }); }
+void Component::setTopLeftPosition (Point<int> pos)           { setBounds (pos.x, pos.y, getWidth(), getHeight()); }
+													          
+void Component::setTopRightPosition (int x, int y)            { setTopLeftPosition (x - getWidth(), y); }
+void Component::setBounds (Rectangle<int> r, bool do_repaint) { setBounds (r.getX(), r.getY(), r.getWidth(), r.getHeight(), do_repaint); }
 
-void Component::setTopLeftPosition (int x, int y)       { setTopLeftPosition ({ x, y }); }
-void Component::setTopLeftPosition (Point<int> pos)     { setBounds (pos.x, pos.y, getWidth(), getHeight()); }
-
-void Component::setTopRightPosition (int x, int y)      { setTopLeftPosition (x - getWidth(), y); }
-void Component::setBounds (Rectangle<int> r)            { setBounds (r.getX(), r.getY(), r.getWidth(), r.getHeight()); }
-
-void Component::setCentrePosition (Point<int> p)        { setBounds (getBounds().withCentre (p.transformedBy (getTransform().inverted()))); }
-void Component::setCentrePosition (int x, int y)        { setCentrePosition ({ x, y }); }
+void Component::setCentrePosition (Point<int> p)              { setBounds (getBounds().withCentre (p.transformedBy (getTransform().inverted()))); }
+void Component::setCentrePosition (int x, int y)              { setCentrePosition ({ x, y }); }
 
 void Component::setCentreRelative (float x, float y)
 {

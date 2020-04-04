@@ -294,7 +294,7 @@ RangedAudioParameter* AudioProcessorValueTreeState::createAndAddParameter (std::
         return nullptr;
 
     // All parameters must be created before giving this manager a ValueTree state!
-    jassert (! state.isValid());
+    //TODO-0 put back jassert (! state.isValid());
 
     if (getParameter (param->paramID) != nullptr)
         return nullptr;

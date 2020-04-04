@@ -114,7 +114,7 @@ String OpenGLHelpers::translateVertexShaderToV3 (const String& code)
         return JUCE_GLSL_VERSION "\n" + output.replace ("varying", "out");
     }
    #endif
-
+	DBG(code);
     return code;
 }
 
@@ -129,6 +129,7 @@ String OpenGLHelpers::translateFragmentShaderToV3 (const String& code)
                       .replace ("gl_FragColor", "fragColor");
    #endif
 
+	DBG(code);
     return code;
 }
 

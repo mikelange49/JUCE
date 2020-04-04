@@ -3159,6 +3159,11 @@ JUCE_EXPORTED_FUNCTION IPluginFactory* PLUGIN_API GetPluginFactory()
     #pragma comment(linker, "/EXPORT:" __FUNCTION__ "=" __FUNCDNAME__)
    #endif
 
+	auto hostType = getHostType();
+	//we want "Instrument" category for Cubase (to route metronome midi out)
+	//but we don't want "Instrument" for Reaper (or else we can't get the 100% wet signal)
+	auto category = hostType.isReaper() ? Vst::PlugType::kFx : JucePlugin_Vst3Category;
+	
     if (globalFactory == nullptr)
     {
         globalFactory = new JucePluginFactory();
@@ -3168,7 +3173,7 @@ JUCE_EXPORTED_FUNCTION IPluginFactory* PLUGIN_API GetPluginFactory()
                                                  kVstAudioEffectClass,
                                                  JucePlugin_Name,
                                                  JucePlugin_Vst3ComponentFlags,
-                                                 JucePlugin_Vst3Category,
+			                                     category,
                                                  JucePlugin_Manufacturer,
                                                  JucePlugin_VersionString,
                                                  kVstVersionString);
