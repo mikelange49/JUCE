@@ -822,6 +822,98 @@ public:
         }
     }
 
+	/** Adds samples from a ring buffer, applying a gain ramp to them.
+
+		@param destChannel          the channel within this buffer to add the samples to
+		@param destStartSample      the start sample within this buffer's channel
+		@param sourceRingBuffer     the source ring buffer
+	    @param sourceChannel        the source ring buffer's channel from which we want to add samples to this buffer
+		@param sourceStartSample    the start sample in the source ring buffer, WILL BE RE-BOUNDED if needed
+		@param numSamples           the number of samples to process
+		@param startGain            the gain to apply to the first sample (this is multiplied with
+									the source samples before they are added to this buffer)
+		@param endGain              the gain to apply to the final sample. The gain is linearly
+									interpolated between the first and last samples.
+		@param replace              will replace this buffer's samples if true, will add this buffer's samples if false
+	*/
+	void write_fromRingBuffer(int destChannel,
+		int destStartSample,
+		AudioBuffer<Type>& sourceRingBuffer,
+		int sourceChannel,
+		int sourceStartSample,
+		int numSamples,
+		Type startGain = 1.0f,
+		Type endGain = 1.0f,
+		bool replace = true) noexcept
+	{
+		jassert(isPositiveAndBelow(destChannel, numChannels));
+		jassert(destStartSample >= 0 && numSamples >= 0 && destStartSample + numSamples <= size);
+
+		if (sourceStartSample >= sourceRingBuffer.getNumSamples())
+			sourceStartSample -= sourceRingBuffer.getNumSamples();
+		else if (sourceStartSample < 0)
+			sourceStartSample += sourceRingBuffer.getNumSamples();
+
+		jassert(sourceStartSample < sourceRingBuffer.getNumSamples());
+
+    	
+		if (numSamples > 0)
+		{
+			isClear = false;
+			if (sourceStartSample + numSamples < sourceRingBuffer.getNumSamples())
+			{
+				const Type* sourcePointer;
+				if (&sourceRingBuffer == this)
+				{
+					sourcePointer = sourceRingBuffer.getWritePointer(sourceChannel, sourceStartSample);
+				}
+				else
+				{
+					sourcePointer = sourceRingBuffer.getReadPointer(sourceChannel, sourceStartSample);
+				}
+				
+				if (replace)
+				{
+					copyFromWithRamp(destChannel, destStartSample, sourcePointer, numSamples, startGain, endGain);
+				}
+				else
+				{
+					addFromWithRamp (destChannel, destStartSample, sourcePointer, numSamples, startGain, endGain);
+				}
+			}
+			else
+			{
+				auto numSamples_1 = sourceRingBuffer.getNumSamples() - sourceStartSample;
+				auto numSamples_2 = numSamples - numSamples_1;
+				auto midGain = jmap(float(numSamples_1) / float(numSamples), startGain, endGain);
+
+				const Type* sourcePointer_1;
+				const Type* sourcePointer_2;
+				if (&sourceRingBuffer == this)
+				{
+					sourcePointer_1 = sourceRingBuffer.getWritePointer(sourceChannel, sourceStartSample);
+					sourcePointer_2 = sourceRingBuffer.getWritePointer(sourceChannel, 0);
+				}
+				else
+				{
+					sourcePointer_1 = sourceRingBuffer.getReadPointer(sourceChannel, sourceStartSample);
+					sourcePointer_2 = sourceRingBuffer.getReadPointer(sourceChannel, 0);
+				}
+				
+				if (replace)
+				{
+					copyFromWithRamp(destChannel, destStartSample               , sourcePointer_1, numSamples_1, startGain, midGain);
+					copyFromWithRamp(destChannel, destStartSample + numSamples_1, sourcePointer_2, numSamples_2, midGain  , endGain);
+				}
+				else
+				{
+					addFromWithRamp (destChannel, destStartSample               , sourcePointer_1, numSamples_1, startGain, midGain);
+					addFromWithRamp (destChannel, destStartSample + numSamples_1, sourcePointer_2, numSamples_2, midGain  , endGain);
+				}
+			}
+		}
+	}
+
     /** Copies samples from another buffer to this one.
 
         @param destChannel          the channel within this buffer to copy the samples to

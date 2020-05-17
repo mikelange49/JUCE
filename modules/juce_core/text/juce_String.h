@@ -1098,7 +1098,7 @@ public:
         auto* const safeEnd = ptr + (bufferSize - 1);
         auto numSigFigsParsed = 0;
 
-        auto writeToBuffer = [safeEnd] (char* destination, char data)
+        auto writeToBufferOld = [safeEnd] (char* destination, char data)
         {
             *destination++ = data;
 
@@ -1131,7 +1131,7 @@ public:
             {
                 if (numSigFigsParsed == numberOfSignificantFigures)
                 {
-                    if (writeToBuffer (ptr++, '0'))
+                    if (writeToBufferOld (ptr++, '0'))
                         return buffer;
 
                     continue;
@@ -1140,7 +1140,7 @@ public:
                 doubleNumber *= 10;
                 auto digit = truncateOrRound (doubleNumber, numSigFigsParsed);
 
-                if (writeToBuffer (ptr++, (char) ('0' + digit)))
+                if (writeToBufferOld (ptr++, (char) ('0' + digit)))
                     return buffer;
 
                 ++numSigFigsParsed;
@@ -1158,7 +1158,7 @@ public:
             *ptr++ = '0';
         }
 
-        if (writeToBuffer (ptr++, '.'))
+        if (writeToBufferOld (ptr++, '.'))
             return buffer;
 
         while (numSigFigsParsed < numberOfSignificantFigures)
@@ -1166,7 +1166,7 @@ public:
             doubleNumber *= 10;
             auto digit = truncateOrRound (doubleNumber, numSigFigsParsed);
 
-            if (writeToBuffer (ptr++, (char) ('0' + digit)))
+            if (writeToBufferOld (ptr++, (char) ('0' + digit)))
                 return buffer;
 
             if (numSigFigsParsed != 0 || digit != 0)

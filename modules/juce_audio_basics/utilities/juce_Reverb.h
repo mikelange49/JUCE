@@ -47,17 +47,22 @@ public:
 
     //==============================================================================
     /** Holds the parameters being used by a Reverb object. */
-    struct Parameters
-    {
-        float roomSize   = 0.5f;     /**< Room size, 0 to 1.0, where 1.0 is big, 0 is small. */
-        float damping    = 0.5f;     /**< Damping, 0 to 1.0, where 0 is not damped, 1.0 is fully damped. */
-        float wetLevel   = 0.33f;    /**< Wet level, 0 to 1.0 */
-        float dryLevel   = 0.4f;     /**< Dry level, 0 to 1.0 */
-        float width      = 1.0f;     /**< Reverb width, 0 to 1.0, where 1.0 is very wide. */
-        float freezeMode = 0.0f;     /**< Freeze mode - values < 0.5 are "normal" mode, values > 0.5
-                                          put the reverb into a continuous feedback loop. */
+	struct Parameters
+	{
+		float roomSize = 0.5f;     /**< Room size, 0 to 1.0, where 1.0 is big, 0 is small. */
+		float damping = 0.5f;     /**< Damping, 0 to 1.0, where 0 is not damped, 1.0 is fully damped. */
+		float wetLevel = 0.33f;    /**< Wet level, 0 to 1.0 */
+		float dryLevel = 0.4f;     /**< Dry level, 0 to 1.0 */
+		float width = 1.0f;     /**< Reverb width, 0 to 1.0, where 1.0 is very wide. */
+		float freezeMode = 0.0f;     /**< Freeze mode - values < 0.5 are "normal" mode, values > 0.5
+										  put the reverb into a continuous feedback loop. */
     };
 
+
+	int numCombs = 8;
+	int numAllPasses = 4;
+	int numChannels = 2;
+	
     //==============================================================================
     /** Returns the reverb's current parameters. */
     const Parameters& getParameters() const noexcept    { return parameters; }
@@ -85,19 +90,25 @@ public:
     /** Sets the sample rate that will be used for the reverb.
         You must call this before the process methods, in order to tell it the correct sample rate.
     */
-    void setSampleRate (const double sampleRate)
+    void setSampleRate (const double sampleRate
+		, int numCombs     = 8, float comb_ratio    = 1.0f
+		, int numAllPasses = 4, float allPass_ratio = 1.0f
+		, float stereoSpread_ratio = 1.0f
+	    , float preDelay_ratio = 0.0f
+	)
     {
         jassert (sampleRate > 0);
 
-        static const short combTunings[] = { 1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617 }; // (at 44100Hz)
-        static const short allPassTunings[] = { 556, 441, 341, 225 };
-        const int stereoSpread = 23;
+		//static const short combTunings[] = { 1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617 }; // (at 44100Hz)
+		static const short combTunings[] = { 111, 118, 127, 135, 142, 149, 155, 161 }; // (at 44100Hz)
+		static const short allPassTunings[] = { 556, 441, 341, 225 };
+        const int stereoSpread = 23 * stereoSpread_ratio;
         const int intSampleRate = (int) sampleRate;
 
         for (int i = 0; i < numCombs; ++i)
         {
-            comb[0][i].setSize ((intSampleRate * combTunings[i]) / 44100);
-            comb[1][i].setSize ((intSampleRate * (combTunings[i] + stereoSpread)) / 44100);
+            comb[0][i].setSize ((intSampleRate * (((combTunings[i] - preDelay_ratio * combTunings[0]) * comb_ratio                                    )) / 44100));
+            comb[1][i].setSize ((intSampleRate * (((combTunings[i] - preDelay_ratio * combTunings[0]) * comb_ratio + stereoSpread * stereoSpread_ratio)) / 44100));
         }
 
         for (int i = 0; i < numAllPasses; ++i)
@@ -194,8 +205,8 @@ private:
 
     void updateDamping() noexcept
     {
-        const float roomScaleFactor = 0.28f;
-        const float roomOffset = 0.7f;
+        const float roomScaleFactor = 0.98f;
+        const float roomOffset = 0.0f;
         const float dampScaleFactor = 0.4f;
 
         if (isFrozen (parameters.freezeMode))
@@ -297,13 +308,13 @@ private:
     };
 
     //==============================================================================
-    enum { numCombs = 8, numAllPasses = 4, numChannels = 2 };
+    enum { max_numCombs = 8, max_numAllPasses = 4, max_numChannels = 2 };
 
     Parameters parameters;
     float gain;
 
-    CombFilter comb [numChannels][numCombs];
-    AllPassFilter allPass [numChannels][numAllPasses];
+    CombFilter comb [max_numChannels][max_numCombs];
+    AllPassFilter allPass [max_numChannels][max_numAllPasses];
 
     SmoothedValue<float> damping, feedback, dryGain, wetGain1, wetGain2;
 
